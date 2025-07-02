@@ -2,6 +2,7 @@
 
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
+#include "dsp/DetunedSawOscillator.h" 
 
 const int kNumPresets = 1;
 
@@ -18,6 +19,7 @@ enum EParams
   kParamLFORateTempo,
   kParamLFORateMode,
   kParamLFODepth,
+  kParamDetuneAmount,
   kNumParams
 };
 
@@ -56,6 +58,7 @@ public:
   bool OnMessage(int msgTag, int ctrlTag, int dataSize, const void* pData) override;
 
 private:
+  DetunedSawOscillator m_detunedOscillator;
   SimpleSynthDSP<sample> mDSP {16};
   IPeakAvgSender<2> mMeterSender;
   ISender<1> mLFOVisSender;

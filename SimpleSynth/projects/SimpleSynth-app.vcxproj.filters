@@ -83,6 +83,12 @@
     <ClCompile Include="..\..\iPlug2\IGraphics\Drawing\IGraphicsSkia.cpp">
       <Filter>IGraphics\Drawing</Filter>
     </ClCompile>
+    <ClCompile Include="..\dsp\DetunedSawOscillator.cpp">
+      <Filter>dsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsp\SawOscillator.cpp">
+      <Filter>dsp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\SimpleSynth.h" />
@@ -277,6 +283,12 @@
       <Filter>IPlug</Filter>
     </ClInclude>
     <ClInclude Include="..\SimpleSynth_DSP.h" />
+    <ClInclude Include="..\dsp\DetunedSawOscillator.h">
+      <Filter>dsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\SawOscillator.h">
+      <Filter>dsp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -314,6 +326,9 @@
     </Filter>
     <Filter Include="IPlug\Extras\Synth">
       <UniqueIdentifier>{fc763cd3-cc76-4d31-9ba4-a4e7361e4adf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dsp">
+      <UniqueIdentifier>{fec6e5aa-b723-472e-ac94-18aa052c4b2a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

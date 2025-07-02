@@ -16,6 +16,7 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
   GetParam(kParamLFORateTempo)->InitEnum("LFO Rate", LFO<>::k1, {LFO_TEMPODIV_VALIST});
   GetParam(kParamLFORateMode)->InitBool("LFO Sync", true);
   GetParam(kParamLFODepth)->InitPercentage("LFO Depth");
+  GetParam(kParamDetuneAmount)->InitDouble("Detune amount", .0, .0, 100.0, 1.0, "cents");
     
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [&]() {
@@ -60,6 +61,9 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
     pGraphics->AttachControl(new IVDisplayControl(lfoPanel.GetGridCell(1, 1, 2, 3).Union(lfoPanel.GetGridCell(1, 2, 2, 3)), "", DEFAULT_STYLE, EDirection::Horizontal, 0.f, 1.f, 0.f, 1024), kCtrlTagLFOVis, "LFO");
     
     pGraphics->AttachControl(new IVGroupControl("LFO", "LFO", 10.f, 20.f, 10.f, 10.f));
+
+    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(6, 2, 6).GetCentredInside(90), kParamDetuneAmount, "Detune"));
+
     
     pGraphics->AttachControl(new IVButtonControl(keyboardBounds.GetFromTRHC(200, 30).GetTranslated(0, -30), SplashClickActionFunc,
       "Show/Hide Keyboard", DEFAULT_STYLE.WithColor(kFG, COLOR_WHITE).WithLabelText({15.f, EVAlign::Middle})))->SetAnimationEndActionFunction(
@@ -88,9 +92,22 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
 #if IPLUG_DSP
 void SimpleSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 {
-  mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
-  mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
-  mLFOVisSender.PushData({kCtrlTagLFOVis, {float(mDSP.mLFO.GetLastOutput())}});
+  // Channel declaration.
+  PLUG_SAMPLE_DST *out01 = outputs[0];
+  PLUG_SAMPLE_DST *out02 = outputs[1];
+
+  for (int s = 0; s < nFrames; s++)
+  {
+    m_detunedOscillator.SetBaseFrequency(100);
+    m_detunedOscillator.SetNumUnisonVoices(10);
+    double sample = m_detunedOscillator.Process();
+    *out01++ = sample;
+    *out02++ = sample;
+  }
+
+//  mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
+//  mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
+//  mLFOVisSender.PushData({kCtrlTagLFOVis, {float(mDSP.mLFO.GetLastOutput())}});
 }
 
 void SimpleSynth::OnIdle()
@@ -132,9 +149,16 @@ handle:
   SendMidiMsg(msg);
 }
 
-void SimpleSynth::OnParamChange(int paramIdx)
+void
+SimpleSynth::OnParamChange(int paramIdx)
 {
   mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
+
+  double value = GetParam(paramIdx)->Value();
+  switch (paramIdx)
+  {
+    case kParamDetuneAmount: m_detunedOscillator.SetDetuneAmount(value); break;
+  }
 }
 
 void SimpleSynth::OnParamChangeUI(int paramIdx, EParamSource source)

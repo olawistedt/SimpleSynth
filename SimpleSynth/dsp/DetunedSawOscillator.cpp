@@ -1,87 +1,101 @@
 #include "DetunedSawOscillator.h"
-#include <numeric> // För std::accumulate (om vi vill summera)
+#include <numeric>  // För std::accumulate (om vi vill summera)
+#include <cmath>    // För std::pow
 
-DetunedSawOscillator::DetunedSawOscillator()
-: m_gen(std::random_device()()), // Initialisera slumpgeneratorn
-  m_detuneDist(-1.0, 1.0)        // Detuning från -1.0 till 1.0 (multipliceras med m_detuneAmount)
+DetunedSawOscillator::DetunedSawOscillator() :
+  m_gen(std::random_device()()),
+  m_detuneDist(-1.0, 1.0)
 {
-  SetNumUnisonVoices(1); // Standard en röst
+  SetNumUnisonVoices(1);
 }
 
-void DetunedSawOscillator::SetSampleRate(double sampleRate)
+void
+DetunedSawOscillator::SetSampleRate(double sampleRate)
 {
   m_sampleRate = sampleRate;
-  for (auto& osc : m_unisonOscillators)
+  for (auto &osc : m_unisonOscillators)
   {
     osc.SetSampleRate(sampleRate);
   }
-  UpdateUnisonFrequencies(); // Uppdatera frekvenser om samplingsfrekvensen ändras
+  UpdateUnisonFrequencies();
 }
 
-void DetunedSawOscillator::SetBaseFrequency(double freq)
+void
+DetunedSawOscillator::SetBaseFrequency(double freq)
 {
   m_baseFrequency = freq;
   UpdateUnisonFrequencies();
 }
 
-void DetunedSawOscillator::SetNumUnisonVoices(int numVoices)
+void
+DetunedSawOscillator::SetNumUnisonVoices(int numVoices)
 {
-  m_numUnisonVoices = std::max(1, numVoices); // Se till att det är minst 1 röst
-  
-  // Ändra storlek på vektorn av oscillatorer
+  m_numUnisonVoices = std::max(1, numVoices);
+
   m_unisonOscillators.resize(m_numUnisonVoices);
-  
-  // Sätt samplingsfrekvensen för alla nya oscillatorer
-  for (auto& osc : m_unisonOscillators)
+
+  for (auto &osc : m_unisonOscillators)
   {
     osc.SetSampleRate(m_sampleRate);
   }
   UpdateUnisonFrequencies();
 }
 
-void DetunedSawOscillator::SetDetuneAmount(double detuneHz)
+void
+DetunedSawOscillator::SetDetuneAmount(double detuneCents)  // Nu tar den in Cents
 {
-  m_detuneAmount = detuneHz;
+  m_detuneCents = detuneCents;
   UpdateUnisonFrequencies();
 }
 
-void DetunedSawOscillator::UpdateUnisonFrequencies()
-{
-  // Fördela detuningen jämnt eller slumpmässigt
-  // Här använder vi en kombination: centrera en röst, och detuna resten slumpmässigt runt den
-  
-  if (m_numUnisonVoices == 1)
-  {
-    m_unisonOscillators[0].SetFrequency(m_baseFrequency);
-  }
-  else
-  {
-    // För en jämnare spridning, detunar vi rösterna runt basfrekvensen.
-    // Vi kan ha en röst på basfrekvensen, och sedan sprida de andra.
-    // Alternativt, detuna alla jämnt runt basfrekvensen.
-    
-    // För detta exempel: den första rösten är ren, resten är slumpmässigt detunade.
-    // En mer avancerad variant skulle sprida detuningen systematiskt.
+// DetunedSawOscillator.cpp
 
-    m_unisonOscillators[0].SetFrequency(m_baseFrequency); // Central röst
-    
-    for (int i = 1; i < m_numUnisonVoices; ++i)
+void
+DetunedSawOscillator::UpdateUnisonFrequencies()
+{
+  if (m_baseFrequency == 0.0)
+  {
+    for (auto &osc : m_unisonOscillators)
     {
-      double randomDetune = m_detuneDist(m_gen) * m_detuneAmount; // Slumpmässig detuning mellan -detuneAmount och +detuneAmount
-      m_unisonOscillators[i].SetFrequency(m_baseFrequency + randomDetune);
+      osc.SetFrequency(0.0);
     }
+    return;
+  }
+
+  for (int i = 0; i < m_numUnisonVoices; ++i)
+  {
+    double normalizedOffset;
+    if (m_numUnisonVoices == 1)
+    {
+      normalizedOffset = 0.0;
+    }
+    else
+    {
+      // Fördelar rösterna jämnt över intervallet [-1.0, 1.0]
+      normalizedOffset = -1.0 + (2.0 * i) / (m_numUnisonVoices - 1.0);
+    }
+
+    double centsOffset = normalizedOffset * m_detuneCents;
+    double detunedFreq = m_baseFrequency * CentsToFrequencyRatio(centsOffset);
+    m_unisonOscillators[i].SetFrequency(detunedFreq);
   }
 }
 
-double DetunedSawOscillator::Process()
+double
+DetunedSawOscillator::Process()
 {
   double mixedSample = 0.0;
-  for (auto& osc : m_unisonOscillators)
+  for (auto &osc : m_unisonOscillators)
   {
     mixedSample += osc.Process();
   }
-  
-  // Normalisera summan för att undvika klippning, beroende på antal röster
-  // En enkel normalisering är att dela med antalet röster.
-  return mixedSample / m_numUnisonVoices;
+
+  return mixedSample / m_numUnisonVoices;  // Normalisera för att undvika klippning
+}
+
+// Ny hjälpfunktion för att konvertera cents till en frekvensratio
+double
+DetunedSawOscillator::CentsToFrequencyRatio(double cents)
+{
+  return std::pow(2.0, cents / 1200.0);  // Varje 1200 cents är en oktav (faktor 2)
 }
