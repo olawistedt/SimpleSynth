@@ -20,6 +20,11 @@ void SawOscillator::UpdatePhaseIncrement()
   m_phaseIncrement = m_frequency / m_sampleRate;
 }
 
+void SawOscillator::ResetPhase()
+{
+  m_phase = 0.0;
+}
+
 double SawOscillator::Process()
 {
   double sample = 2.0 * (m_phase - std::floor(m_phase + 0.5)); // Sawtooth från -1 till 1

@@ -42,9 +42,19 @@ DetunedSawOscillator::SetNumUnisonVoices(int numVoices)
 }
 
 void
+DetunedSawOscillator::ResetUnisonPhases()
+{
+  for (auto &osc : m_unisonOscillators)
+  {
+    osc.ResetPhase();
+  }
+}
+
+void
 DetunedSawOscillator::SetDetuneAmount(double detuneCents)  // Nu tar den in Cents
 {
   m_detuneCents = detuneCents;
+  ResetUnisonPhases();
   UpdateUnisonFrequencies();
 }
 

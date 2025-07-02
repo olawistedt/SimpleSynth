@@ -8,7 +8,8 @@ public:
   SawOscillator();
   void SetSampleRate(double sampleRate);
   void SetFrequency(double freq);
-  double Process(); // Beräknar nästa sampel
+  double Process();
+  void ResetPhase();
 
 private:
   double m_sampleRate = 44100.0;
