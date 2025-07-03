@@ -5,6 +5,11 @@
 SimpleSynth::SimpleSynth(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
 {
+  for (int i = 0; i < 10; i++)
+  {
+    mVoices[i] = -1;
+  }
+
   GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
   GetParam(kParamNoteGlideTime)->InitMilliseconds("Note Glide Time", 0., 0.0, 30.);
   GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
@@ -92,18 +97,75 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
 #if IPLUG_DSP
 void SimpleSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
 {
-  // Channel declaration.
+
+    // Channel declaration.
   PLUG_SAMPLE_DST *out01 = outputs[0];
   PLUG_SAMPLE_DST *out02 = outputs[1];
 
   for (int s = 0; s < nFrames; s++)
   {
-    m_detunedOscillator.SetBaseFrequency(100);
-    m_detunedOscillator.SetNumUnisonVoices(10);
-    double sample = m_detunedOscillator.Process();
-    *out01++ = sample;
-    *out02++ = sample;
+    while (!mMidiQueue.Empty())
+    {
+      IMidiMsg msg = mMidiQueue.Peek();
+      if (msg.StatusMsg() == IMidiMsg::kNoteOn)
+      {
+        assert(msg.NoteNumber() != 0);
+        short useVoice = -1;
+        // Allocate a voice for the note.
+        for (int i = 0; i < kNumVoices; ++i)
+        {
+          if (mVoices[i] == -1)
+          {
+            useVoice = i;
+            mVoices[i] = msg.NoteNumber();
+            break;
+          }
+        }
+        if (useVoice != -1)
+        {
+          mVoice[useVoice].NoteOn(msg.NoteNumber());
+        }
+      }
+      else if (msg.StatusMsg() == IMidiMsg::kNoteOff)
+      {
+        short releaseVoiceNr;
+        for (int i = 0; i < kNumVoices; ++i)
+        {
+          if (mVoices[i] == msg.NoteNumber())
+          {
+            releaseVoiceNr = i;
+            mVoices[i] = -1;
+            break;
+          }
+        }
+        mVoice[releaseVoiceNr].NoteOff(msg.NoteNumber());
+      }
+      mMidiQueue.Remove();
+    }
+    double allLeft = 0.0;
+    double allRight = 0.0;
+    for (int i = 0; i < kNumVoices; ++i)
+    {
+      double sound = mVoice[i].getMono();
+      allLeft += sound;
+      allRight += sound;
+    }
+    *out01++ = allLeft;
+    *out02++ = allRight;
   }
+
+  //// Channel declaration.
+  //PLUG_SAMPLE_DST *out01 = outputs[0];
+  //PLUG_SAMPLE_DST *out02 = outputs[1];
+
+  //for (int s = 0; s < nFrames; s++)
+  //{
+  //  m_detunedOscillator.SetBaseFrequency(100);
+  //  m_detunedOscillator.SetNumUnisonVoices(10);
+  //  double sample = m_detunedOscillator.Process();
+  //  *out01++ = sample;
+  //  *out02++ = sample;
+  //}
 
 //  mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
 //  mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);
@@ -125,28 +187,7 @@ void SimpleSynth::OnReset()
 void SimpleSynth::ProcessMidiMsg(const IMidiMsg& msg)
 {
   TRACE;
-  
-  int status = msg.StatusMsg();
-  
-  switch (status)
-  {
-    case IMidiMsg::kNoteOn:
-    case IMidiMsg::kNoteOff:
-    case IMidiMsg::kPolyAftertouch:
-    case IMidiMsg::kControlChange:
-    case IMidiMsg::kProgramChange:
-    case IMidiMsg::kChannelAftertouch:
-    case IMidiMsg::kPitchWheel:
-    {
-      goto handle;
-    }
-    default:
-      return;
-  }
-  
-handle:
-  mDSP.ProcessMidiMsg(msg);
-  SendMidiMsg(msg);
+  mMidiQueue.Add(msg);  // Take care of MIDI events in ProcessBlock()
 }
 
 void
@@ -157,7 +198,13 @@ SimpleSynth::OnParamChange(int paramIdx)
   double value = GetParam(paramIdx)->Value();
   switch (paramIdx)
   {
-    case kParamDetuneAmount: m_detunedOscillator.SetDetuneAmount(value); break;
+    case kParamDetuneAmount:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].SetDetuneAmount(value);
+      }
+      break;
+
   }
 }
 

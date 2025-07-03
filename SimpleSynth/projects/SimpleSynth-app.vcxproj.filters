@@ -89,6 +89,9 @@
     <ClCompile Include="..\dsp\SawOscillator.cpp">
       <Filter>dsp</Filter>
     </ClCompile>
+    <ClCompile Include="..\dsp\Voice.cpp">
+      <Filter>dsp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\SimpleSynth.h" />
@@ -287,6 +290,9 @@
       <Filter>dsp</Filter>
     </ClInclude>
     <ClInclude Include="..\dsp\SawOscillator.h">
+      <Filter>dsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\Voice.h">
       <Filter>dsp</Filter>
     </ClInclude>
   </ItemGroup>
