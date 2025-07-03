@@ -146,26 +146,16 @@ void SimpleSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     double allRight = 0.0;
     for (int i = 0; i < kNumVoices; ++i)
     {
-      double sound = mVoice[i].getMono();
-      allLeft += sound;
-      allRight += sound;
+      if (mVoices[i] != -1)
+      {
+        double sound = mVoice[i].getMono();
+        allLeft += sound;
+        allRight += sound;
+      }
     }
     *out01++ = allLeft;
     *out02++ = allRight;
   }
-
-  //// Channel declaration.
-  //PLUG_SAMPLE_DST *out01 = outputs[0];
-  //PLUG_SAMPLE_DST *out02 = outputs[1];
-
-  //for (int s = 0; s < nFrames; s++)
-  //{
-  //  m_detunedOscillator.SetBaseFrequency(100);
-  //  m_detunedOscillator.SetNumUnisonVoices(10);
-  //  double sample = m_detunedOscillator.Process();
-  //  *out01++ = sample;
-  //  *out02++ = sample;
-  //}
 
 //  mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
 //  mMeterSender.ProcessBlock(outputs, nFrames, kCtrlTagMeter);

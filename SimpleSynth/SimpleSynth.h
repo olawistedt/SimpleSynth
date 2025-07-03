@@ -64,7 +64,6 @@ private:
   Voice mVoice[kNumVoices];
   short mVoices[kNumVoices];
 
-  DetunedSawOscillator m_detunedOscillator;
   SimpleSynthDSP<sample> mDSP {16};
   IPeakAvgSender<2> mMeterSender;
   ISender<1> mLFOVisSender;
