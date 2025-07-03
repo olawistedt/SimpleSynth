@@ -23,7 +23,6 @@ Voice::NoteOn(unsigned char ucNote)
 {
   double freq = m_note2freq[ucNote];
   m_detunedOscillator.SetBaseFrequency(freq);
-  m_detunedOscillator.SetBaseFrequency(100);
 }
 
 void
