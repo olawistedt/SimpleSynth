@@ -148,9 +148,9 @@ void SimpleSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
     {
       if (mVoices[i] != -1)
       {
-        double sound = mVoice[i].getMono();
-        allLeft += sound;
-        allRight += sound;
+        std::array<double, 2> sample = mVoice[i].getStereo();
+        allLeft += sample[0];
+        allRight += sample[1];
       }
     }
     *out01++ = allLeft;

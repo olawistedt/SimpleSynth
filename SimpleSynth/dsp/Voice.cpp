@@ -30,23 +30,10 @@ Voice::NoteOff(unsigned char ucNote)
 {
 }
 
-double
-Voice::getMono()
+std::array<double, 2>
+Voice::getStereo()
 {
-  double sample = m_detunedOscillator.Process();
-  return sample;
-}
-
-double
-Voice::getLeft()
-{
-  return getMono();
-}
-
-double
-Voice::getRight()
-{
-  return getMono();
+  return m_detunedOscillator.Process();
 }
 
 void
