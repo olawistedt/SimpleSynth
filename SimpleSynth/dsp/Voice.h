@@ -9,7 +9,7 @@ public:
   Voice();
   void NoteOn(unsigned char ucNote);
   void NoteOff(unsigned char ucNote);
-  double getStereo();
+  std::array<double, 2> getStereo();
   void SetDetuneAmount(double cents);
 
 private:
