@@ -14,8 +14,6 @@ Voice::Voice() //: m_ucNote(0)
     m_note2freq[i] = (double)a;
     a *= k;
   }
-
-  m_detunedOscillator.SetNumUnisonVoices(10);
 }
 
 void
@@ -30,7 +28,7 @@ Voice::NoteOff(unsigned char ucNote)
 {
 }
 
-std::array<double, 2>
+double
 Voice::getStereo()
 {
   return m_detunedOscillator.Process();
