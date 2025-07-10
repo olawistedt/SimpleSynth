@@ -15,14 +15,18 @@ Voice::Voice() //: m_ucNote(0)
     a *= k;
   }
 
-  m_detunedOscillator.SetNumUnisonVoices(10);
+  m_detunedOscillator1.SetNumUnisonVoices(10);
+  m_detunedOscillator2.SetNumUnisonVoices(10);
 }
 
 void
 Voice::NoteOn(unsigned char ucNote)
 {
   double freq = m_note2freq[ucNote];
-  m_detunedOscillator.SetBaseFrequency(freq);
+  m_detunedOscillator1.SetBaseFrequency(freq);
+  m_detunedOscillator1.ResetUnisonPhases();
+  m_detunedOscillator2.SetBaseFrequency(freq);
+  m_detunedOscillator2.ResetUnisonPhases();
 }
 
 void
@@ -33,8 +37,9 @@ Voice::NoteOff(unsigned char ucNote)
 double
 Voice::getMono()
 {
-  double sample = m_detunedOscillator.Process();
-  return sample;
+  double sample = m_detunedOscillator1.Process();
+  sample += m_detunedOscillator2.Process();
+  return sample / 2.0;
 }
 
 double
@@ -50,7 +55,14 @@ Voice::getRight()
 }
 
 void
-Voice::SetDetuneAmount(double cents)
+Voice::SetDetuneAmount(int oscNr, double cents)
 {
-  m_detunedOscillator.SetDetuneAmount(cents);
+  if (oscNr == kOsc1)
+  {
+    m_detunedOscillator1.SetDetuneAmount(cents);
+  }
+  else
+  {
+    m_detunedOscillator2.SetDetuneAmount(cents);
+  }
 }

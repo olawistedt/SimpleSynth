@@ -21,7 +21,8 @@ enum EParams
   kParamLFORateTempo,
   kParamLFORateMode,
   kParamLFODepth,
-  kParamDetuneAmount,
+  kParamDetuneAmount1,
+  kParamDetuneAmount2,
   kNumParams
 };
 

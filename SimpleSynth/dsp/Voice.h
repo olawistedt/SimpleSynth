@@ -3,6 +3,9 @@
 
 #include "DetunedSawOscillator.h"
 
+const int kOsc1 = 0;
+const int kOsc2 = 1;
+
 class Voice
 {
 public:
@@ -12,10 +15,11 @@ public:
   double getMono();
   double getLeft();
   double getRight();
-  void SetDetuneAmount(double cents);
+  void SetDetuneAmount(int oscNr, double cents);
 
 private:
-  DetunedSawOscillator m_detunedOscillator;
+  DetunedSawOscillator m_detunedOscillator1;
+  DetunedSawOscillator m_detunedOscillator2;
   double m_note2freq[140];
 };
 

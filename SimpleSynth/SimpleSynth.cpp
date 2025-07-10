@@ -21,8 +21,9 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
   GetParam(kParamLFORateTempo)->InitEnum("LFO Rate", LFO<>::k1, {LFO_TEMPODIV_VALIST});
   GetParam(kParamLFORateMode)->InitBool("LFO Sync", true);
   GetParam(kParamLFODepth)->InitPercentage("LFO Depth");
-  GetParam(kParamDetuneAmount)->InitDouble("Detune amount", .0, .0, 100.0, 1.0, "cents");
-    
+  GetParam(kParamDetuneAmount1)->InitDouble("Detune amount osc 1", .0, .0, 50.0, .5, "cents");
+  GetParam(kParamDetuneAmount2)->InitDouble("Detune amount osc 2", .0, .0, 50.0, .5, "cents");
+
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [&]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
@@ -67,7 +68,12 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
     
     pGraphics->AttachControl(new IVGroupControl("LFO", "LFO", 10.f, 20.f, 10.f, 10.f));
 
-    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(6, 2, 6).GetCentredInside(90), kParamDetuneAmount, "Detune"));
+    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(6, 2, 6).GetCentredInside(90),
+                                               kParamDetuneAmount1,
+                                               "Detune osc 1"));
+    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(7, 2, 6).GetCentredInside(90),
+                                               kParamDetuneAmount2,
+                                               "Detune osc 2"));
 
     
     pGraphics->AttachControl(new IVButtonControl(keyboardBounds.GetFromTRHC(200, 30).GetTranslated(0, -30), SplashClickActionFunc,
@@ -188,10 +194,16 @@ SimpleSynth::OnParamChange(int paramIdx)
   double value = GetParam(paramIdx)->Value();
   switch (paramIdx)
   {
-    case kParamDetuneAmount:
+    case kParamDetuneAmount1:
       for (int i = 0; i < kNumVoices; ++i)
       {
-        mVoice[i].SetDetuneAmount(value);
+        mVoice[i].SetDetuneAmount(kOsc1, value);
+      }
+      break;
+    case kParamDetuneAmount2:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].SetDetuneAmount(kOsc2, value);
       }
       break;
 
