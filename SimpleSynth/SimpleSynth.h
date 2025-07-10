@@ -23,6 +23,7 @@ enum EParams
   kParamLFODepth,
   kParamDetuneAmount1,
   kParamDetuneAmount2,
+  kParamMixOscillators,
   kNumParams
 };
 

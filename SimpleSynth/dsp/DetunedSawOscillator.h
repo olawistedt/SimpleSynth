@@ -13,6 +13,7 @@ public:
   void SetBaseFrequency(double freq);
   void SetNumUnisonVoices(int numVoices);
   void SetDetuneAmount(double detuneCents);
+  void SetVolume(double volume);
   void ResetUnisonPhases();
 
   double Process();
@@ -23,6 +24,7 @@ private:
   double m_baseFrequency = 440.0;
   double m_detuneCents = 0.0;
   double m_sampleRate = 44100.0;
+  double mVolume = 1.0;
 
   std::mt19937 m_gen;
   std::uniform_real_distribution<> m_detuneDist;

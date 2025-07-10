@@ -21,8 +21,12 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
   GetParam(kParamLFORateTempo)->InitEnum("LFO Rate", LFO<>::k1, {LFO_TEMPODIV_VALIST});
   GetParam(kParamLFORateMode)->InitBool("LFO Sync", true);
   GetParam(kParamLFODepth)->InitPercentage("LFO Depth");
+
+
   GetParam(kParamDetuneAmount1)->InitDouble("Detune amount osc 1", .0, .0, 50.0, .5, "cents");
   GetParam(kParamDetuneAmount2)->InitDouble("Detune amount osc 2", .0, .0, 50.0, .5, "cents");
+  GetParam(kParamMixOscillators)->InitDouble("Mix oscillators", 1.0, 0.0, 1.0, .01, "blend");
+  
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [&]() {
@@ -59,21 +63,27 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
     pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(3, 1, 4).GetMidHPadded(30.), kParamRelease, "Release"));
     pGraphics->AttachControl(new IVLEDMeterControl<2>(controls.GetFromRight(100).GetPadded(-30)), kCtrlTagMeter);
     
-    pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 0, 2, 3).GetCentredInside(60), kParamLFORateHz, "Rate"), kNoTag, "LFO")->Hide(true);
-    pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 0, 2, 3).GetCentredInside(60), kParamLFORateTempo, "Rate"), kNoTag, "LFO")->DisablePrompt(false);
-    pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 1, 2, 3).GetCentredInside(60), kParamLFODepth, "Depth"), kNoTag, "LFO");
-    pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 2, 2, 3).GetCentredInside(60), kParamLFOShape, "Shape"), kNoTag, "LFO")->DisablePrompt(false);
-    pGraphics->AttachControl(new IVSlideSwitchControl(lfoPanel.GetGridCell(1, 0, 2, 3).GetFromTop(30).GetMidHPadded(20), kParamLFORateMode, "Sync", DEFAULT_STYLE.WithShowValue(false).WithShowLabel(false).WithWidgetFrac(0.5f).WithDrawShadows(false), false), kNoTag, "LFO");
-    pGraphics->AttachControl(new IVDisplayControl(lfoPanel.GetGridCell(1, 1, 2, 3).Union(lfoPanel.GetGridCell(1, 2, 2, 3)), "", DEFAULT_STYLE, EDirection::Horizontal, 0.f, 1.f, 0.f, 1024), kCtrlTagLFOVis, "LFO");
+    //pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 0, 2, 3).GetCentredInside(60), kParamLFORateHz, "Rate"), kNoTag, "LFO")->Hide(true);
+    //pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 0, 2, 3).GetCentredInside(60), kParamLFORateTempo, "Rate"), kNoTag, "LFO")->DisablePrompt(false);
+    //pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 1, 2, 3).GetCentredInside(60), kParamLFODepth, "Depth"), kNoTag, "LFO");
+    //pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 2, 2, 3).GetCentredInside(60), kParamLFOShape, "Shape"), kNoTag, "LFO")->DisablePrompt(false);
+    //pGraphics->AttachControl(new IVSlideSwitchControl(lfoPanel.GetGridCell(1, 0, 2, 3).GetFromTop(30).GetMidHPadded(20), kParamLFORateMode, "Sync", DEFAULT_STYLE.WithShowValue(false).WithShowLabel(false).WithWidgetFrac(0.5f).WithDrawShadows(false), false), kNoTag, "LFO");
+    //pGraphics->AttachControl(new IVDisplayControl(lfoPanel.GetGridCell(1, 1, 2, 3).Union(lfoPanel.GetGridCell(1, 2, 2, 3)), "", DEFAULT_STYLE, EDirection::Horizontal, 0.f, 1.f, 0.f, 1024), kCtrlTagLFOVis, "LFO");
     
     pGraphics->AttachControl(new IVGroupControl("LFO", "LFO", 10.f, 20.f, 10.f, 10.f));
 
-    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(6, 2, 6).GetCentredInside(90),
+    // My synth begins
+    pGraphics->AttachControl(new IVKnobControl(IRECT(50, 50, 100, 150),
                                                kParamDetuneAmount1,
-                                               "Detune osc 1"));
-    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(7, 2, 6).GetCentredInside(90),
+                                               "Detune 1"));
+    pGraphics->AttachControl(
+        new IVKnobControl(IRECT(50, 150, 100, 250),
                                                kParamDetuneAmount2,
-                                               "Detune osc 2"));
+                                               "Detune 2"));
+    pGraphics->AttachControl(
+        new IVSliderControl(IRECT(150, 50, 250, 250),
+                                                 kParamMixOscillators,
+                                                 "Mix oscillators"));
 
     
     pGraphics->AttachControl(new IVButtonControl(keyboardBounds.GetFromTRHC(200, 30).GetTranslated(0, -30), SplashClickActionFunc,
@@ -204,6 +214,13 @@ SimpleSynth::OnParamChange(int paramIdx)
       for (int i = 0; i < kNumVoices; ++i)
       {
         mVoice[i].SetDetuneAmount(kOsc2, value);
+      }
+      break;
+    case kParamMixOscillators:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].SetVolume(kOsc1, value);
+        mVoice[i].SetVolume(kOsc2, 1.0 - value);
       }
       break;
 

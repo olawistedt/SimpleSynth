@@ -66,3 +66,16 @@ Voice::SetDetuneAmount(int oscNr, double cents)
     m_detunedOscillator2.SetDetuneAmount(cents);
   }
 }
+
+void
+Voice::SetVolume(int oscNr, double volume)
+{
+  if (oscNr == kOsc1)
+  {
+    m_detunedOscillator1.SetVolume(volume);
+  }
+  else
+  {
+    m_detunedOscillator2.SetVolume(volume);
+  }
+}

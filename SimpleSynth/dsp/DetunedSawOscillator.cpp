@@ -51,12 +51,19 @@ DetunedSawOscillator::ResetUnisonPhases()
 }
 
 void
-DetunedSawOscillator::SetDetuneAmount(double detuneCents)  // Nu tar den in Cents
+DetunedSawOscillator::SetDetuneAmount(double detuneCents)
 {
   m_detuneCents = detuneCents;
   ResetUnisonPhases();
   UpdateUnisonFrequencies();
 }
+
+void
+DetunedSawOscillator::SetVolume(double volume)
+{
+  mVolume = volume;
+}
+
 
 // DetunedSawOscillator.cpp
 
@@ -100,7 +107,7 @@ DetunedSawOscillator::Process()
     mixedSample += osc.Process();
   }
 
-  return mixedSample / m_numUnisonVoices;  // Normalisera för att undvika klippning
+  return mixedSample / m_numUnisonVoices * mVolume;  // Normalisera för att undvika klippning
 }
 
 // Ny hjälpfunktion för att konvertera cents till en frekvensratio

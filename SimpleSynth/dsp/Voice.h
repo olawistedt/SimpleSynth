@@ -16,6 +16,7 @@ public:
   double getLeft();
   double getRight();
   void SetDetuneAmount(int oscNr, double cents);
+  void SetVolume(int oscNr, double volume);
 
 private:
   DetunedSawOscillator m_detunedOscillator1;
