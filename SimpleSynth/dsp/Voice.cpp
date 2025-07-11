@@ -17,6 +17,15 @@ Voice::Voice() //: m_ucNote(0)
 
   m_detunedOscillator1.SetNumUnisonVoices(10);
   m_detunedOscillator2.SetNumUnisonVoices(10);
+  mVolumeEnvelope = Envelope();
+}
+
+void
+Voice::SetSampleRate(double sampleRate)
+{
+  m_detunedOscillator1.SetSampleRate(sampleRate);
+  m_detunedOscillator2.SetSampleRate(sampleRate);
+  mVolumeEnvelope.setSampleRate(sampleRate);
 }
 
 void
@@ -27,11 +36,13 @@ Voice::NoteOn(unsigned char ucNote)
   m_detunedOscillator1.ResetUnisonPhases();
   m_detunedOscillator2.SetBaseFrequency(m_note2freq[ucNote + m_osc2semitone]);
   m_detunedOscillator2.ResetUnisonPhases();
+  mVolumeEnvelope.restart();
 }
 
 void
 Voice::NoteOff(unsigned char ucNote)
 {
+  mVolumeEnvelope.beginReleasePhase();
 }
 
 double
@@ -39,7 +50,7 @@ Voice::getMono()
 {
   double sample = m_detunedOscillator1.Process();
   sample += m_detunedOscillator2.Process();
-  return sample / 2.0;
+  return sample / 2.0 * mVolumeEnvelope.get();
 }
 
 double
@@ -81,7 +92,7 @@ Voice::SetVolume(int oscNr, double volume)
 }
 
 void
-Voice::SetOsc2Semitone(double semitone)
+Voice::SetOsc2Semitone(int semitone)
 {
   m_osc2semitone = semitone;
 }

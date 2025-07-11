@@ -7,15 +7,17 @@
 
 const int kNumPresets = 1;
 const int kNumVoices = 10;
+const int kFree = -1;
+const int kInRelease = -2;
 
 enum EParams
 {
   kParamGain = 0,
   kParamNoteGlideTime,
-  kParamAttack,
-  kParamDecay,
-  kParamSustain,
-  kParamRelease,
+  kParamVolumeAttack,
+  kParamVolumeDecay,
+  kParamVolumeSustain,
+  kParamVolumeRelease,
   kParamLFOShape,
   kParamLFORateHz,
   kParamLFORateTempo,

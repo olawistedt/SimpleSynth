@@ -322,6 +322,7 @@
     <ClInclude Include="..\..\iPlug2\IPlug\IPlug_include_in_plug_src.h" />
     <ClInclude Include="..\..\iPlug2\IPlug\ISender.h" />
     <ClInclude Include="..\dsp\DetunedSawOscillator.h" />
+    <ClInclude Include="..\dsp\Envelope.h" />
     <ClInclude Include="..\dsp\SawOscillator.h" />
     <ClInclude Include="..\dsp\Voice.h" />
     <ClInclude Include="..\SimpleSynth.h" />
@@ -371,6 +372,7 @@
     <ClCompile Include="..\..\iPlug2\IPlug\IPlugProcessor.cpp" />
     <ClCompile Include="..\..\iPlug2\IPlug\IPlugTimer.cpp" />
     <ClCompile Include="..\dsp\DetunedSawOscillator.cpp" />
+    <ClCompile Include="..\dsp\Envelope.cpp" />
     <ClCompile Include="..\dsp\SawOscillator.cpp" />
     <ClCompile Include="..\dsp\Voice.cpp" />
     <ClCompile Include="..\SimpleSynth.cpp" />

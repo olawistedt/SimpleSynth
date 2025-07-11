@@ -7,15 +7,11 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
 {
   for (int i = 0; i < 10; i++)
   {
-    mVoices[i] = -1;
+    mVoices[i] = kFree;
   }
 
   GetParam(kParamGain)->InitDouble("Gain", 100., 0., 100.0, 0.01, "%");
   GetParam(kParamNoteGlideTime)->InitMilliseconds("Note Glide Time", 0., 0.0, 30.);
-  GetParam(kParamAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
-  GetParam(kParamDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR", IParam::ShapePowCurve(3.));
-  GetParam(kParamSustain)->InitDouble("Sustain", 50., 0., 100., 1, "%", IParam::kFlagsNone, "ADSR");
-  GetParam(kParamRelease)->InitDouble("Release", 10., 2., 1000., 0.1, "ms", IParam::kFlagsNone, "ADSR");
   GetParam(kParamLFOShape)->InitEnum("LFO Shape", LFO<>::kTriangle, {LFO_SHAPE_VALIST});
   GetParam(kParamLFORateHz)->InitFrequency("LFO Rate", 1., 0.01, 40.);
   GetParam(kParamLFORateTempo)->InitEnum("LFO Rate", LFO<>::k1, {LFO_TEMPODIV_VALIST});
@@ -28,6 +24,16 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
   GetParam(kParamMixOscillators)->InitDouble("Mix oscillators", 1.0, 0.0, 1.0, .01, "blend");
   GetParam(kParamOsc2Semitone)->InitInt("Frequence Osc 2", -12, -12, 12, "semitones");
   
+  GetParam(kParamVolumeAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms");
+  GetParam(kParamVolumeDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms");
+  GetParam(kParamVolumeSustain)->InitDouble("Sustain", 0.5, 0., 1., 0.01, "%");
+  GetParam(kParamVolumeRelease)->InitDouble("Release", 1000., 0., 1000., 10., "ms");
+
+  //  GetParam(kParamVolumeAttack)->InitDouble("Volume Attack", 100., 100., 4000.0, 10., "msec");
+  //GetParam(kParamVolumeDecay)->InitDouble("Volume Decay", 1500., 0., 4000.0, 10., "msec");
+  //GetParam(kParamVolumeSustain)->InitDouble("Volume Sustain", 0.5, 0., 1.0, 0.01, "%");
+  //GetParam(kParamVolumeRelease)->InitDouble("Volume Release", 1000., 0., 4000.0, 10., "msec");
+
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [&]() {
@@ -58,10 +64,10 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
     pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(0, 2, 6).GetCentredInside(90), kParamGain, "Gain"));
     pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(1, 2, 6).GetCentredInside(90), kParamNoteGlideTime, "Glide"));
     const IRECT sliders = controls.GetGridCell(2, 2, 6).Union(controls.GetGridCell(3, 2, 6)).Union(controls.GetGridCell(4, 2, 6));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(0, 1, 4).GetMidHPadded(30.), kParamAttack, "Attack"));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(1, 1, 4).GetMidHPadded(30.), kParamDecay, "Decay"));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(2, 1, 4).GetMidHPadded(30.), kParamSustain, "Sustain"));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(3, 1, 4).GetMidHPadded(30.), kParamRelease, "Release"));
+    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(0, 1, 4).GetMidHPadded(30.), kParamVolumeAttack, "Volume Attack"));
+    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(1, 1, 4).GetMidHPadded(30.), kParamVolumeDecay, "Volume Decay"));
+    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(2, 1, 4).GetMidHPadded(30.), kParamVolumeSustain, "Volume Sustain"));
+    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(3, 1, 4).GetMidHPadded(30.), kParamVolumeRelease, "VolumeRelease"));
     pGraphics->AttachControl(new IVLEDMeterControl<2>(controls.GetFromRight(100).GetPadded(-30)), kCtrlTagMeter);
     
     //pGraphics->AttachControl(new IVKnobControl(lfoPanel.GetGridCell(0, 0, 2, 3).GetCentredInside(60), kParamLFORateHz, "Rate"), kNoTag, "LFO")->Hide(true);
@@ -133,7 +139,7 @@ void SimpleSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
         // Allocate a voice for the note.
         for (int i = 0; i < kNumVoices; ++i)
         {
-          if (mVoices[i] == -1)
+          if (mVoices[i] == kFree)
           {
             useVoice = i;
             mVoices[i] = msg.NoteNumber();
@@ -153,7 +159,7 @@ void SimpleSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
           if (mVoices[i] == msg.NoteNumber())
           {
             releaseVoiceNr = i;
-            mVoices[i] = -1;
+            mVoices[i] = kInRelease;
             break;
           }
         }
@@ -170,6 +176,10 @@ void SimpleSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
         double sound = mVoice[i].getMono();
         allLeft += sound;
         allRight += sound;
+        if (mVoice[i].mVolumeEnvelope.inPhase() == Envelope::kIdle)
+        {
+          mVoices[i] = -1; // Not allocated anymore
+        }
       }
     }
     *out01++ = allLeft;
@@ -191,6 +201,11 @@ void SimpleSynth::OnReset()
 {
   mDSP.Reset(GetSampleRate(), GetBlockSize());
   mMeterSender.Reset(GetSampleRate());
+
+  for (int i = 0; i < kNumVoices; ++i)
+  {
+    mVoice[i].SetSampleRate(GetSampleRate());
+  }
 }
 
 void SimpleSynth::ProcessMidiMsg(const IMidiMsg& msg)
@@ -202,7 +217,7 @@ void SimpleSynth::ProcessMidiMsg(const IMidiMsg& msg)
 void
 SimpleSynth::OnParamChange(int paramIdx)
 {
-  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
+//  mDSP.SetParam(paramIdx, GetParam(paramIdx)->Value());
 
   double value = GetParam(paramIdx)->Value();
   switch (paramIdx)
@@ -232,7 +247,31 @@ SimpleSynth::OnParamChange(int paramIdx)
         mVoice[i].SetOsc2Semitone(value);
       }
       break;
-      
+    case kParamVolumeAttack:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].mVolumeEnvelope.setAttack(value);
+      }
+      break;
+    case kParamVolumeDecay:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].mVolumeEnvelope.setDecay(value);
+      }
+      break;
+    case kParamVolumeSustain:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].mVolumeEnvelope.setSustain(value);
+      }
+      break;
+    case kParamVolumeRelease:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].mVolumeEnvelope.setRelease(value);
+      }
+      break;
+   
 
   }
 }
