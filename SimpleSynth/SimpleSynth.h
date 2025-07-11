@@ -24,6 +24,7 @@ enum EParams
   kParamDetuneAmount1,
   kParamDetuneAmount2,
   kParamMixOscillators,
+  kParamOsc2Semitone,
   kNumParams
 };
 

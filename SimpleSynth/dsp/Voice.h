@@ -17,11 +17,13 @@ public:
   double getRight();
   void SetDetuneAmount(int oscNr, double cents);
   void SetVolume(int oscNr, double volume);
+  void SetOsc2Semitone(double semitone);
 
 private:
   DetunedSawOscillator m_detunedOscillator1;
   DetunedSawOscillator m_detunedOscillator2;
   double m_note2freq[140];
+  int m_osc2semitone;
 };
 
 #endif  // __VOICE_H__

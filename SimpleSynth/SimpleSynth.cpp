@@ -26,6 +26,7 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
   GetParam(kParamDetuneAmount1)->InitDouble("Detune amount osc 1", .0, .0, 50.0, .5, "cents");
   GetParam(kParamDetuneAmount2)->InitDouble("Detune amount osc 2", .0, .0, 50.0, .5, "cents");
   GetParam(kParamMixOscillators)->InitDouble("Mix oscillators", 1.0, 0.0, 1.0, .01, "blend");
+  GetParam(kParamOsc2Semitone)->InitInt("Frequence Osc 2", -12, -12, 12, "semitones");
   
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
@@ -73,17 +74,19 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
     pGraphics->AttachControl(new IVGroupControl("LFO", "LFO", 10.f, 20.f, 10.f, 10.f));
 
     // My synth begins
-    pGraphics->AttachControl(new IVKnobControl(IRECT(50, 50, 100, 150),
+    pGraphics->AttachControl(new IVKnobControl(IRECT(50, 50, 120, 150),
                                                kParamDetuneAmount1,
                                                "Detune 1"));
     pGraphics->AttachControl(
-        new IVKnobControl(IRECT(50, 150, 100, 250),
+        new IVKnobControl(IRECT(50, 150, 120, 250),
                                                kParamDetuneAmount2,
                                                "Detune 2"));
     pGraphics->AttachControl(
-        new IVSliderControl(IRECT(150, 50, 250, 250),
+        new IVSliderControl(IRECT(200, 50, 350, 250),
                                                  kParamMixOscillators,
                                                  "Mix oscillators"));
+    pGraphics->AttachControl(
+        new IVKnobControl(IRECT(130, 150, 200, 250), kParamOsc2Semitone, "Semitones"));
 
     
     pGraphics->AttachControl(new IVButtonControl(keyboardBounds.GetFromTRHC(200, 30).GetTranslated(0, -30), SplashClickActionFunc,
@@ -223,6 +226,13 @@ SimpleSynth::OnParamChange(int paramIdx)
         mVoice[i].SetVolume(kOsc2, 1.0 - value);
       }
       break;
+    case kParamOsc2Semitone:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].SetOsc2Semitone(value);
+      }
+      break;
+      
 
   }
 }

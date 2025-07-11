@@ -25,7 +25,7 @@ Voice::NoteOn(unsigned char ucNote)
   double freq = m_note2freq[ucNote];
   m_detunedOscillator1.SetBaseFrequency(freq);
   m_detunedOscillator1.ResetUnisonPhases();
-  m_detunedOscillator2.SetBaseFrequency(freq);
+  m_detunedOscillator2.SetBaseFrequency(m_note2freq[ucNote + m_osc2semitone]);
   m_detunedOscillator2.ResetUnisonPhases();
 }
 
@@ -78,4 +78,10 @@ Voice::SetVolume(int oscNr, double volume)
   {
     m_detunedOscillator2.SetVolume(volume);
   }
+}
+
+void
+Voice::SetOsc2Semitone(double semitone)
+{
+  m_osc2semitone = semitone;
 }
