@@ -19,21 +19,31 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
   GetParam(kParamLFODepth)->InitPercentage("LFO Depth");
 
 
-  GetParam(kParamDetuneAmount1)->InitDouble("Detune amount osc 1", .0, .0, 50.0, .5, "cents");
-  GetParam(kParamDetuneAmount2)->InitDouble("Detune amount osc 2", .0, .0, 50.0, .5, "cents");
-  GetParam(kParamMixOscillators)->InitDouble("Mix oscillators", 1.0, 0.0, 1.0, .01, "blend");
+  GetParam(kParamDetuneAmount1)->InitDouble("Detune amount osc 1", 1.0, .0, 50.0, .5, "cents");
+  GetParam(kParamDetuneAmount2)->InitDouble("Detune amount osc 2", 2.0, .0, 50.0, .5, "cents");
+  GetParam(kParamMixOscillators)->InitDouble("Mix oscillators", .5, 0.0, 1.0, .01, "blend");
   GetParam(kParamOsc2Semitone)->InitInt("Frequence Osc 2", -12, -12, 12, "semitones");
   
-  GetParam(kParamVolumeAttack)->InitDouble("Attack", 10., 1., 1000., 0.1, "ms");
-  GetParam(kParamVolumeDecay)->InitDouble("Decay", 10., 1., 1000., 0.1, "ms");
-  GetParam(kParamVolumeSustain)->InitDouble("Sustain", 0.5, 0., 1., 0.01, "%");
-  GetParam(kParamVolumeRelease)->InitDouble("Release", 1000., 0., 1000., 10., "ms");
+  GetParam(kParamVolumeAttack)->InitDouble("Volume Attack", 10., 1., 1000., 0.1, "ms");
+  GetParam(kParamVolumeDecay)->InitDouble("Volume Decay", 10., 1., 1000., 0.1, "ms");
+  GetParam(kParamVolumeSustain)->InitDouble("Volume Sustain", 0.5, 0., 1., 0.01, "%");
+  GetParam(kParamVolumeRelease)->InitDouble("Volume Release", 500., 0., 1000., 10., "ms");
 
   //  GetParam(kParamVolumeAttack)->InitDouble("Volume Attack", 100., 100., 4000.0, 10., "msec");
   //GetParam(kParamVolumeDecay)->InitDouble("Volume Decay", 1500., 0., 4000.0, 10., "msec");
   //GetParam(kParamVolumeSustain)->InitDouble("Volume Sustain", 0.5, 0., 1.0, 0.01, "%");
   //GetParam(kParamVolumeRelease)->InitDouble("Volume Release", 1000., 0., 4000.0, 10., "msec");
 
+  GetParam(kParamFilterCutoff)->InitDouble("Filter Cutoff",
+                   2000.0,
+                   20.,
+                   22050.0,
+                   100.0,
+                   "hz",
+                   0,
+                   "",
+                   iplug::IParam::ShapePowCurve(3.5));
+  GetParam(kParamFilterResonance)->InitDouble("Filter Resonance", 0.0, 0.0, 1.0, 0.01, "%");
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [&]() {
@@ -61,8 +71,8 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
     pGraphics->AttachControl(new IWheelControl(wheelsBounds.FracRectHorizontal(0.5, true), IMidiMsg::EControlChangeMsg::kModWheel));
 //    pGraphics->AttachControl(new IVMultiSliderControl<4>(b.GetGridCell(0, 2, 2).GetPadded(-30), "", DEFAULT_STYLE, kParamAttack, EDirection::Vertical, 0.f, 1.f));
     const IRECT controls = b.GetGridCell(1, 2, 2);
-    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(0, 2, 6).GetCentredInside(90), kParamGain, "Gain"));
-    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(1, 2, 6).GetCentredInside(90), kParamNoteGlideTime, "Glide"));
+//    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(0, 2, 6).GetCentredInside(90), kParamGain, "Gain"));
+//    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(1, 2, 6).GetCentredInside(90), kParamNoteGlideTime, "Glide"));
     const IRECT sliders = controls.GetGridCell(2, 2, 6).Union(controls.GetGridCell(3, 2, 6)).Union(controls.GetGridCell(4, 2, 6));
     pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(0, 1, 4).GetMidHPadded(30.), kParamVolumeAttack, "Volume Attack"));
     pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(1, 1, 4).GetMidHPadded(30.), kParamVolumeDecay, "Volume Decay"));
@@ -93,6 +103,12 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
                                                  "Mix oscillators"));
     pGraphics->AttachControl(
         new IVKnobControl(IRECT(130, 150, 200, 250), kParamOsc2Semitone, "Semitones"));
+
+    pGraphics->AttachControl(
+        new IVKnobControl(IRECT(350, 50, 420, 150), kParamFilterCutoff, "Cutoff"));
+    pGraphics->AttachControl(
+            new IVKnobControl(IRECT(420, 50, 490, 150), kParamFilterResonance, "Resonance"));
+
 
     
     pGraphics->AttachControl(new IVButtonControl(keyboardBounds.GetFromTRHC(200, 30).GetTranslated(0, -30), SplashClickActionFunc,
@@ -271,6 +287,19 @@ SimpleSynth::OnParamChange(int paramIdx)
         mVoice[i].mVolumeEnvelope.setRelease(value);
       }
       break;
+    case kParamFilterCutoff:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].mFilter.setCutoff(value);
+      }
+      break;
+    case kParamFilterResonance:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].mFilter.setResonance(value);
+      }
+      break;
+
    
 
   }

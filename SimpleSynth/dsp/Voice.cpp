@@ -26,6 +26,7 @@ Voice::SetSampleRate(double sampleRate)
   m_detunedOscillator1.SetSampleRate(sampleRate);
   m_detunedOscillator2.SetSampleRate(sampleRate);
   mVolumeEnvelope.setSampleRate(sampleRate);
+  mFilter.setSampleRate(sampleRate);
 }
 
 void
@@ -50,7 +51,9 @@ Voice::getMono()
 {
   double sample = m_detunedOscillator1.Process();
   sample += m_detunedOscillator2.Process();
-  return sample / 2.0 * mVolumeEnvelope.get();
+  sample /= 2.0;
+
+  return mFilter.process(sample) * mVolumeEnvelope.get();
 }
 
 double

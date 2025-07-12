@@ -3,6 +3,7 @@
 
 #include "DetunedSawOscillator.h"
 #include "Envelope.h"
+#include "Filter.h"
 
 const int kOsc1 = 0;
 const int kOsc2 = 1;
@@ -23,6 +24,7 @@ public:
   void SetOsc2Semitone(int semitone);
 
   Envelope mVolumeEnvelope;
+  Filter mFilter;
 
 private:
   DetunedSawOscillator m_detunedOscillator1;
