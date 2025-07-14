@@ -9,12 +9,16 @@ public:
   double process(double x);
   ~Filter();
   double getCutoff();
+  void setBaseCutoff(double cutoff);
+  double getBaseCutoff();
   void setCutoff(double c);
   double getRes();
   void setResonance(double r);
   void setSampleRate(double fs);
+  double getSampleRate();
 
 protected:
+  double mBaseCutoff;
   double cutoff;
   double res;
   double fs;

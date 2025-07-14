@@ -24,6 +24,7 @@ public:
   void SetOsc2Semitone(int semitone);
 
   Envelope mVolumeEnvelope;
+  Envelope mFilterEnvelope;
   Filter mFilter;
 
 private:

@@ -1,4 +1,5 @@
 #include "Voice.h"
+#include <algorithm>  // For std::clamp
 
 Voice::Voice() //: m_ucNote(0)
 {
@@ -18,6 +19,7 @@ Voice::Voice() //: m_ucNote(0)
   m_detunedOscillator1.SetNumUnisonVoices(10);
   m_detunedOscillator2.SetNumUnisonVoices(10);
   mVolumeEnvelope = Envelope();
+  mFilterEnvelope = Envelope();
 }
 
 void
@@ -26,6 +28,7 @@ Voice::SetSampleRate(double sampleRate)
   m_detunedOscillator1.SetSampleRate(sampleRate);
   m_detunedOscillator2.SetSampleRate(sampleRate);
   mVolumeEnvelope.setSampleRate(sampleRate);
+  mFilterEnvelope.setSampleRate(sampleRate);
   mFilter.setSampleRate(sampleRate);
 }
 
@@ -38,22 +41,39 @@ Voice::NoteOn(unsigned char ucNote)
   m_detunedOscillator2.SetBaseFrequency(m_note2freq[ucNote + m_osc2semitone]);
   m_detunedOscillator2.ResetUnisonPhases();
   mVolumeEnvelope.restart();
+  mFilterEnvelope.restart();
 }
 
 void
 Voice::NoteOff(unsigned char ucNote)
 {
   mVolumeEnvelope.beginReleasePhase();
+  mFilterEnvelope.beginReleasePhase();
 }
 
 double
 Voice::getMono()
 {
-  double sample = m_detunedOscillator1.Process();
-  sample += m_detunedOscillator2.Process();
-  sample /= 2.0;
+  double oscillators = m_detunedOscillator1.Process();
+  oscillators += m_detunedOscillator2.Process();
+  oscillators /= 2.0;
 
-  return mFilter.process(sample) * mVolumeEnvelope.get();
+  double filterEnvelopeValue = mFilterEnvelope.get();
+  double baseCutoff = mFilter.getBaseCutoff();
+  double minCutoffEnv = 20.0;     // Lowest frequency the envelope can bring the cutoff
+  double maxCutoffEnv = 20000.0;  // Highest frequency the envelope can bring the cutoff
+  double filterEnvAmount = mFilterEnvelope.getAmount();
+  double envelopeModulatedFreq =
+      minCutoffEnv * std::pow((maxCutoffEnv / minCutoffEnv), filterEnvelopeValue);
+  double finalCutoff =
+      (baseCutoff * (1.0 - filterEnvAmount)) + (envelopeModulatedFreq * filterEnvAmount);
+    finalCutoff = std::clamp(finalCutoff,
+                           20.0,
+                           mFilter.getSampleRate() / 2.0 - 100.0);  // Use filter's max safe cutoff
+
+  mFilter.setCutoff(finalCutoff);
+
+  return mFilter.process(oscillators) * mVolumeEnvelope.get();
 }
 
 double

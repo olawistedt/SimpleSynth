@@ -29,6 +29,11 @@ enum EParams
   kParamOsc2Semitone,
   kParamFilterCutoff,
   kParamFilterResonance,
+  kParamFilterAttack,
+  kParamFilterDecay,
+  kParamFilterSustain,
+  kParamFilterRelease,
+  kParamFilterEnvelopeAmount,
   kNumParams
 };
 

@@ -64,6 +64,18 @@ Filter::getCutoff()
   return cutoff;
 }
 
+double
+Filter::getBaseCutoff()
+{
+  return mBaseCutoff;
+}
+
+void
+Filter::setBaseCutoff(double cutoff)
+{
+  mBaseCutoff = cutoff;
+}
+
 void
 Filter::setCutoff(double c)
 {
@@ -89,4 +101,10 @@ Filter::setSampleRate(double sr)
 {
   fs = sr;
   calc();
+}
+
+double
+Filter::getSampleRate()
+{
+  return fs;
 }
