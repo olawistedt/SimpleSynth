@@ -22,7 +22,7 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
   GetParam(kParamDetuneAmount1)->InitDouble("Detune amount osc 1", 1.0, .0, 50.0, .5, "cents");
   GetParam(kParamDetuneAmount2)->InitDouble("Detune amount osc 2", 2.0, .0, 50.0, .5, "cents");
   GetParam(kParamMixOscillators)->InitDouble("Mix oscillators", .5, 0.0, 1.0, .01, "blend");
-  GetParam(kParamOsc2Semitone)->InitInt("Frequence Osc 2", -12, -12, 12, "semitones");
+  GetParam(kParamOsc2Semitone)->InitInt("Frequency Osc 2", -12, -12, 12, "semitones");
   
   GetParam(kParamVolumeAttack)->InitDouble("Volume Attack", 400., 1., 1000., 0.1, "ms");
   GetParam(kParamVolumeDecay)->InitDouble("Volume Decay", 400., 1., 1000., 0.1, "ms");
@@ -53,7 +53,7 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
   
   mLayoutFunc = [&](IGraphics* pGraphics) {
     pGraphics->AttachCornerResizer(EUIResizerMode::Scale, false);
-    pGraphics->AttachPanelBackground(COLOR_GRAY);
+//    pGraphics->AttachPanelBackground(COLOR_GRAY);
     pGraphics->EnableMouseOver(true);
     pGraphics->EnableMultiTouch(true);
     
@@ -61,24 +61,34 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
     pGraphics->AttachPopupMenuControl();
 #endif
 
-//    pGraphics->EnableLiveEdit(true);
+    //    pGraphics->EnableLiveEdit(true);
     pGraphics->LoadFont("Roboto-Regular", ROBOTO_FN);
+
+    // Background
+    pGraphics->LoadBitmap(BACKGROUND_FN, 1, true);
+    pGraphics->AttachBackground(BACKGROUND_FN);
+
     const IRECT b = pGraphics->GetBounds().GetPadded(-20.f);
     const IRECT lfoPanel = b.GetFromLeft(300.f).GetFromTop(200.f);
-    IRECT keyboardBounds = b.GetFromBottom(300);
+    IRECT keyboardBounds = b.GetFromBottom(100);
+
     IRECT wheelsBounds = keyboardBounds.ReduceFromLeft(100.f).GetPadded(-10.f);
-    pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds), kCtrlTagKeyboard);
-    pGraphics->AttachControl(new IWheelControl(wheelsBounds.FracRectHorizontal(0.5)), kCtrlTagBender);
+    pGraphics->AttachControl(new IVKeyboardControl(keyboardBounds, 12, 80), kCtrlTagKeyboard);
+    pGraphics->AttachControl(new IWheelControl(wheelsBounds.FracRectHorizontal(0.5)),
+                             kCtrlTagBender);
     pGraphics->AttachControl(new IWheelControl(wheelsBounds.FracRectHorizontal(0.5, true), IMidiMsg::EControlChangeMsg::kModWheel));
 //    pGraphics->AttachControl(new IVMultiSliderControl<4>(b.GetGridCell(0, 2, 2).GetPadded(-30), "", DEFAULT_STYLE, kParamAttack, EDirection::Vertical, 0.f, 1.f));
     const IRECT controls = b.GetGridCell(1, 2, 2);
 //    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(0, 2, 6).GetCentredInside(90), kParamGain, "Gain"));
 //    pGraphics->AttachControl(new IVKnobControl(controls.GetGridCell(1, 2, 6).GetCentredInside(90), kParamNoteGlideTime, "Glide"));
-    const IRECT sliders = controls.GetGridCell(2, 2, 6).Union(controls.GetGridCell(3, 2, 6)).Union(controls.GetGridCell(4, 2, 6));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(0, 1, 4).GetMidHPadded(30.), kParamVolumeAttack, "Volume Attack"));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(1, 1, 4).GetMidHPadded(30.), kParamVolumeDecay, "Volume Decay"));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(2, 1, 4).GetMidHPadded(30.), kParamVolumeSustain, "Volume Sustain"));
-    pGraphics->AttachControl(new IVSliderControl(sliders.GetGridCell(3, 1, 4).GetMidHPadded(30.), kParamVolumeRelease, "VolumeRelease"));
+    pGraphics->AttachControl(
+        new IVSliderControl(IRECT(750, 150, 800, 280), kParamVolumeAttack, "A"));
+    pGraphics->AttachControl(
+        new IVSliderControl(IRECT(800, 150, 850, 280), kParamVolumeDecay, "D"));
+    pGraphics->AttachControl(
+        new IVSliderControl(IRECT(850, 150, 900, 280), kParamVolumeSustain, "S"));
+    pGraphics->AttachControl(
+        new IVSliderControl(IRECT(900, 150, 950, 280), kParamVolumeRelease, "R"));
 
 
 //    pGraphics->AttachControl(new IVLEDMeterControl<2>(controls.GetFromRight(100).GetPadded(-30)), kCtrlTagMeter);
@@ -105,7 +115,7 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
                                                  kParamMixOscillators,
                                                  "Mix oscillators"));
     pGraphics->AttachControl(
-        new IVKnobControl(IRECT(130, 150, 200, 250), kParamOsc2Semitone, "Semitones"));
+        new IVKnobControl(IRECT(130, 150, 200, 250), kParamOsc2Semitone, "Frequency"));
 
     pGraphics->AttachControl(
         new IVKnobControl(IRECT(350, 50, 420, 150), kParamFilterCutoff, "Cutoff"));
@@ -113,7 +123,7 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
             new IVKnobControl(IRECT(420, 50, 490, 150), kParamFilterResonance, "Resonance"));
 
     pGraphics->AttachControl(
-        new IVKnobControl(IRECT(500, 50, 570, 150), kParamFilterEnvelopeAmount, "Envelope amount"));
+        new IVKnobControl(IRECT(500, 50, 570, 150), kParamFilterEnvelopeAmount, "Env amount"));
 
     pGraphics->AttachControl(new IVSliderControl(IRECT(350, 150, 400, 280),
                                                  kParamFilterAttack,
@@ -277,7 +287,7 @@ SimpleSynth::OnParamChange(int paramIdx)
     case kParamOsc2Semitone:
       for (int i = 0; i < kNumVoices; ++i)
       {
-        mVoice[i].SetOsc2Semitone(value);
+        mVoice[i].SetOsc2Semitone(static_cast<int>(value));
       }
       break;
     case kParamVolumeAttack:
