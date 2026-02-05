@@ -330,6 +330,11 @@
     <ClInclude Include="..\..\iPlug2\IPlug\VST3\IPlugVST3_Parameter.h" />
     <ClInclude Include="..\..\iPlug2\IPlug\VST3\IPlugVST3_ProcessorBase.h" />
     <ClInclude Include="..\..\iPlug2\IPlug\VST3\IPlugVST3_View.h" />
+    <ClInclude Include="..\dsp\DetunedSawOscillator.h" />
+    <ClInclude Include="..\dsp\Envelope.h" />
+    <ClInclude Include="..\dsp\Filter.h" />
+    <ClInclude Include="..\dsp\SawOscillator.h" />
+    <ClInclude Include="..\dsp\Voice.h" />
     <ClInclude Include="..\SimpleSynth.h" />
     <ClInclude Include="..\SimpleSynth_DSP.h" />
     <ClInclude Include="..\resources\resource.h" />
@@ -395,6 +400,11 @@
     <ClCompile Include="..\..\iPlug2\IPlug\IPlugTimer.cpp" />
     <ClCompile Include="..\..\iPlug2\IPlug\VST3\IPlugVST3.cpp" />
     <ClCompile Include="..\..\iPlug2\IPlug\VST3\IPlugVST3_ProcessorBase.cpp" />
+    <ClCompile Include="..\dsp\DetunedSawOscillator.cpp" />
+    <ClCompile Include="..\dsp\Envelope.cpp" />
+    <ClCompile Include="..\dsp\Filter.cpp" />
+    <ClCompile Include="..\dsp\SawOscillator.cpp" />
+    <ClCompile Include="..\dsp\Voice.cpp" />
     <ClCompile Include="..\SimpleSynth.cpp" />
     <ClCompile Include="..\..\iPlug2\WDL\win32_utf8.c" />
   </ItemGroup>

@@ -141,6 +141,21 @@
     <ClCompile Include="..\..\iPlug2\IGraphics\IGraphicsEditorDelegate.cpp">
       <Filter>IGraphics</Filter>
     </ClCompile>
+    <ClCompile Include="..\dsp\DetunedSawOscillator.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsp\Envelope.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsp\Filter.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsp\SawOscillator.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsp\Voice.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../config.h" />
@@ -377,6 +392,21 @@
       <Filter>IPlug</Filter>
     </ClInclude>
     <ClInclude Include="..\SimpleSynth_DSP.h" />
+    <ClInclude Include="..\dsp\DetunedSawOscillator.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\Envelope.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\Filter.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\SawOscillator.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\Voice.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -441,6 +471,9 @@
     </Filter>
     <Filter Include="IPlug\VST3\VST3_SDK\plugininterfaces\base">
       <UniqueIdentifier>{5f06b03e-5093-46c0-9513-efb4e494c857}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DSP">
+      <UniqueIdentifier>{7effd4bb-5114-410e-918c-5a2f96f7d8d2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

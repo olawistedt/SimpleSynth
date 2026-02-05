@@ -84,6 +84,21 @@
     <ClCompile Include="..\..\iPlug2\IGraphics\Drawing\IGraphicsSkia.cpp">
       <Filter>IGraphics\Drawing</Filter>
     </ClCompile>
+    <ClCompile Include="..\dsp\DetunedSawOscillator.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsp\Envelope.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsp\Filter.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsp\SawOscillator.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dsp\Voice.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\SimpleSynth.h" />
@@ -278,6 +293,21 @@
       <Filter>IPlug</Filter>
     </ClInclude>
     <ClInclude Include="..\SimpleSynth_DSP.h" />
+    <ClInclude Include="..\dsp\DetunedSawOscillator.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\Envelope.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\Filter.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\SawOscillator.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\Voice.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -315,6 +345,9 @@
     </Filter>
     <Filter Include="IPlug\Extras\Synth">
       <UniqueIdentifier>{fc763cd3-cc76-4d31-9ba4-a4e7361e4adf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DSP">
+      <UniqueIdentifier>{2baddf71-0364-4c04-af61-e252b1d38b23}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
