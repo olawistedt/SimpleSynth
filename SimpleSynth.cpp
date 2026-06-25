@@ -139,11 +139,11 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
 
     // Delay
     pGraphics->AttachControl(
-        new IVKnobControl(IRECT(600, 160, 670, 260), kParamDelayTime, "Delay Time"));
+        new IVKnobControl(IRECT(1000, 160, 1070, 260), kParamDelayTime, "Delay Time"));
     pGraphics->AttachControl(
-        new IVKnobControl(IRECT(670, 160, 740, 260), kParamDelayFeedback, "Feedback"));
+        new IVKnobControl(IRECT(1070, 160, 1140, 260), kParamDelayFeedback, "Feedback"));
     pGraphics->AttachControl(
-        new IVKnobControl(IRECT(740, 160, 810, 260), kParamDelayMix, "Delay Mix"));
+        new IVKnobControl(IRECT(1140, 160, 1210, 260), kParamDelayMix, "Delay Mix"));
 
     pGraphics->AttachControl(new IVSliderControl(IRECT(350, 150, 400, 280),
                                                  kParamFilterAttack,
