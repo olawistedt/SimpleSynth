@@ -1,6 +1,7 @@
 #include "SimpleSynth.h"
 #include "IPlug_include_in_plug_src.h"
 #include "LFO.h"
+#include <cmath>
 
 SimpleSynth::SimpleSynth(const InstanceInfo& info)
 : iplug::Plugin(info, MakeConfig(kNumParams, kNumPresets))
@@ -225,8 +226,10 @@ void SimpleSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
         }
       }
     }
-    *out01++ = allLeft;
-    *out02++ = allRight;
+    // Apply master gain and soft-clip so overlapping voices saturate
+    // gracefully instead of clipping harshly when many notes sound at once.
+    *out01++ = std::tanh(allLeft * mGain);
+    *out02++ = std::tanh(allRight * mGain);
   }
 
 //  mDSP.ProcessBlock(nullptr, outputs, 2, nFrames, mTimeInfo.mPPQPos, mTimeInfo.mTransportIsRunning);
@@ -265,6 +268,9 @@ SimpleSynth::OnParamChange(int paramIdx)
   double value = GetParam(paramIdx)->Value();
   switch (paramIdx)
   {
+    case kParamGain:
+      mGain = value / 100.0;
+      break;
     case kParamDetuneAmount1:
       for (int i = 0; i < kNumVoices; ++i)
       {

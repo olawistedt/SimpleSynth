@@ -102,7 +102,7 @@ Envelope::get()
 
   if (m_ucInPhase == kAttackPhase)
   {
-    if (m_ulCurrent == m_ulAttackEnds)
+    if (m_ulCurrent >= m_ulAttackEnds)
     {
       m_ucInPhase = kDecayPhase;
       m_ulCurrent = 0;
@@ -115,7 +115,7 @@ Envelope::get()
   }
   if (m_ucInPhase == kDecayPhase)
   {
-    if (m_ulCurrent == m_ulDecayEnds)
+    if (m_ulCurrent >= m_ulDecayEnds)
     {
       m_ucInPhase = kSustainPhase;
       m_ulCurrent = 0;
@@ -132,7 +132,7 @@ Envelope::get()
   }
   if (m_ucInPhase == kReleasePhase)
   {
-    if (m_ulCurrent == m_ulReleaseEnds)
+    if (m_ulCurrent >= m_ulReleaseEnds)
     {
       m_ucInPhase = kIdle;
       m_ulCurrent = 0;

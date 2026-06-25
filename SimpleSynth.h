@@ -75,6 +75,7 @@ private:
   IMidiQueue mMidiQueue;
   Voice mVoice[kNumVoices];
   short mVoices[kNumVoices];
+  double mGain = 1.0;
 
   SimpleSynthDSP<sample> mDSP {16};
   IPeakAvgSender<2> mMeterSender;

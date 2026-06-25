@@ -16,6 +16,8 @@ Voice::Voice() //: m_ucNote(0)
     a *= k;
   }
 
+  m_osc2semitone = 0;
+
   m_detunedOscillator1.SetNumUnisonVoices(10);
   m_detunedOscillator2.SetNumUnisonVoices(10);
   mVolumeEnvelope = Envelope();
@@ -35,10 +37,11 @@ Voice::SetSampleRate(double sampleRate)
 void
 Voice::NoteOn(unsigned char ucNote)
 {
-  double freq = m_note2freq[ucNote];
-  m_detunedOscillator1.SetBaseFrequency(freq);
+  int osc1Note = std::clamp<int>(ucNote, 0, 139);
+  int osc2Note = std::clamp<int>(ucNote + m_osc2semitone, 0, 139);
+  m_detunedOscillator1.SetBaseFrequency(m_note2freq[osc1Note]);
   m_detunedOscillator1.ResetUnisonPhases();
-  m_detunedOscillator2.SetBaseFrequency(m_note2freq[ucNote + m_osc2semitone]);
+  m_detunedOscillator2.SetBaseFrequency(m_note2freq[osc2Note]);
   m_detunedOscillator2.ResetUnisonPhases();
   mVolumeEnvelope.restart();
   mFilterEnvelope.restart();
