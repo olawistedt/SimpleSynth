@@ -3,7 +3,8 @@
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
 #include "dsp/Voice.h"
-#include "dsp/DetunedSawOscillator.h" 
+#include "dsp/DetunedSawOscillator.h"
+#include "dsp/Effects.h"
 
 const int kNumPresets = 1;
 const int kNumVoices = 10;
@@ -36,6 +37,9 @@ enum EParams
   kParamFilterEnvelopeAmount,
   kParamFilterType,
   kParamFilterDrive,
+  kParamDelayTime,
+  kParamDelayFeedback,
+  kParamDelayMix,
   kNumParams
 };
 
@@ -78,6 +82,7 @@ private:
   Voice mVoice[kNumVoices];
   short mVoices[kNumVoices];
   double mGain = 1.0;
+  Effects mEffects;
 
   SimpleSynthDSP<sample> mDSP {16};
   IPeakAvgSender<2> mMeterSender;

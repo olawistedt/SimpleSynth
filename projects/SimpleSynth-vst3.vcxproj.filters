@@ -144,6 +144,9 @@
     <ClCompile Include="..\dsp\DetunedSawOscillator.cpp">
       <Filter>DSP</Filter>
     </ClCompile>
+    <ClCompile Include="..\dsp\Effects.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
     <ClCompile Include="..\dsp\Envelope.cpp">
       <Filter>DSP</Filter>
     </ClCompile>
@@ -393,6 +396,9 @@
     </ClInclude>
     <ClInclude Include="..\SimpleSynth_DSP.h" />
     <ClInclude Include="..\dsp\DetunedSawOscillator.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\Effects.h">
       <Filter>DSP</Filter>
     </ClInclude>
     <ClInclude Include="..\dsp\Envelope.h">

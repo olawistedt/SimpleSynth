@@ -331,6 +331,7 @@
     <ClInclude Include="..\..\iPlug2\IPlug\VST3\IPlugVST3_ProcessorBase.h" />
     <ClInclude Include="..\..\iPlug2\IPlug\VST3\IPlugVST3_View.h" />
     <ClInclude Include="..\dsp\DetunedSawOscillator.h" />
+    <ClInclude Include="..\dsp\Effects.h" />
     <ClInclude Include="..\dsp\Envelope.h" />
     <ClInclude Include="..\dsp\Filter.h" />
     <ClInclude Include="..\dsp\SawOscillator.h" />
@@ -401,6 +402,7 @@
     <ClCompile Include="..\..\iPlug2\IPlug\VST3\IPlugVST3.cpp" />
     <ClCompile Include="..\..\iPlug2\IPlug\VST3\IPlugVST3_ProcessorBase.cpp" />
     <ClCompile Include="..\dsp\DetunedSawOscillator.cpp" />
+    <ClCompile Include="..\dsp\Effects.cpp" />
     <ClCompile Include="..\dsp\Envelope.cpp" />
     <ClCompile Include="..\dsp\Filter.cpp" />
     <ClCompile Include="..\dsp\SawOscillator.cpp" />

@@ -49,6 +49,10 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
   GetParam(kParamFilterType)->InitEnum("Filter Type", Filter::kLowPass, {"LP", "HP", "BP", "Notch"});
   GetParam(kParamFilterDrive)->InitDouble("Filter Drive", 0.0, 0.0, 100.0, 1.0, "%");
 
+  GetParam(kParamDelayTime)->InitDouble("Delay Time", 300., 1., 2000., 1., "ms");
+  GetParam(kParamDelayFeedback)->InitDouble("Delay Feedback", 35., 0., 95., 1., "%");
+  GetParam(kParamDelayMix)->InitDouble("Delay Mix", 25., 0., 100., 1., "%");
+
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [&]() {
     return MakeGraphics(*this, PLUG_WIDTH, PLUG_HEIGHT, PLUG_FPS, GetScaleForScreen(PLUG_WIDTH, PLUG_HEIGHT));
@@ -132,6 +136,14 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
         new IVKnobControl(IRECT(570, 50, 640, 150), kParamFilterDrive, "Drive"));
     pGraphics->AttachControl(
         new IVKnobControl(IRECT(640, 50, 710, 150), kParamFilterType, "Type"))->DisablePrompt(false);
+
+    // Delay
+    pGraphics->AttachControl(
+        new IVKnobControl(IRECT(600, 160, 670, 260), kParamDelayTime, "Delay Time"));
+    pGraphics->AttachControl(
+        new IVKnobControl(IRECT(670, 160, 740, 260), kParamDelayFeedback, "Feedback"));
+    pGraphics->AttachControl(
+        new IVKnobControl(IRECT(740, 160, 810, 260), kParamDelayMix, "Delay Mix"));
 
     pGraphics->AttachControl(new IVSliderControl(IRECT(350, 150, 400, 280),
                                                  kParamFilterAttack,
@@ -233,6 +245,9 @@ void SimpleSynth::ProcessBlock(sample** inputs, sample** outputs, int nFrames)
         }
       }
     }
+    // Stereo delay on the master bus.
+    mEffects.processStereo(allLeft, allRight);
+
     // Apply master gain and soft-clip so overlapping voices saturate
     // gracefully instead of clipping harshly when many notes sound at once.
     *out01++ = std::tanh(allLeft * mGain);
@@ -254,6 +269,7 @@ void SimpleSynth::OnReset()
 {
   mDSP.Reset(GetSampleRate(), GetBlockSize());
   mMeterSender.Reset(GetSampleRate());
+  mEffects.setSampleRate(GetSampleRate());
 
   for (int i = 0; i < kNumVoices; ++i)
   {
@@ -383,6 +399,16 @@ SimpleSynth::OnParamChange(int paramIdx)
       {
         mVoice[i].mFilter.setDrive(value / 100.0);
       }
+      break;
+
+    case kParamDelayTime:
+      mEffects.setDelayTime(value);
+      break;
+    case kParamDelayFeedback:
+      mEffects.setFeedback(value / 100.0);
+      break;
+    case kParamDelayMix:
+      mEffects.setMix(value / 100.0);
       break;
 
       

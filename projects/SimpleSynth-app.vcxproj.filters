@@ -99,6 +99,9 @@
     <ClCompile Include="..\dsp\Voice.cpp">
       <Filter>DSP</Filter>
     </ClCompile>
+    <ClCompile Include="..\dsp\Effects.cpp">
+      <Filter>DSP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\SimpleSynth.h" />
@@ -306,6 +309,9 @@
       <Filter>DSP</Filter>
     </ClInclude>
     <ClInclude Include="..\dsp\Voice.h">
+      <Filter>DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dsp\Effects.h">
       <Filter>DSP</Filter>
     </ClInclude>
   </ItemGroup>
