@@ -1,17 +1,13 @@
-
-
 #include "Filter.h"
 
 #define _USE_MATH_DEFINES  // To get M_PI
-#include <math.h>
+#include <cmath>      // For std::tan, std::tanh, M_PI
+#include <algorithm>  // For std::clamp
 
-
-// MoogFilter
 Filter::Filter()
 {
-  fs = 44100.0;
-
   init();
+  calc();
 }
 
 Filter::~Filter() {}
@@ -19,49 +15,74 @@ Filter::~Filter() {}
 void
 Filter::init()
 {
-  // initialize values
-  y1 = y2 = y3 = y4 = oldx = oldy1 = oldy2 = oldy3 = 0;
-  calc();
-};
+  // reset integrator states
+  ic1eq = 0.0;
+  ic2eq = 0.0;
+}
 
 void
 Filter::calc()
 {
-  double f = (cutoff + cutoff) / fs;  //[0 - 1]
-  p = f * (1.8f - 0.8f * f);
-  k = p + p - 1.f;
+  // Keep cutoff in a stable range below Nyquist (tan() blows up at fs/2).
+  double fc = std::clamp(mCutoff, 10.0, 0.49 * mSampleRate);
 
-  double t = (1.f - p) * 1.386249f;
-  double t2 = 12.f + t * t;
-  r = res * (t2 + 6.f * t) / (t2 - 6.f * t);
-};
+  g = std::tan(M_PI * fc / mSampleRate);
+
+  // Map resonance 0..1 to damping k (= 1/Q). k = 2 -> Q = 0.5 (no resonance);
+  // k -> ~0 gives very high Q and self-oscillation at the top of the range.
+  k = 2.0 - 1.98 * std::clamp(mRes, 0.0, 1.0);
+
+  a1 = 1.0 / (1.0 + g * (g + k));
+  a2 = g * a1;
+  a3 = g * a2;
+}
 
 double
 Filter::process(double input)
 {
-  // process input
-  x = input - r * y4;
+  // Drive: saturate the input. Transparent when drive == 0, increasingly
+  // dirty/aggressive as it is turned up.
+  if (mDrive > 0.0)
+    input = std::tanh(input * (1.0 + mDrive * 9.0));
 
-  //Four cascaded onepole filters (bilinear transform)
-  y1 = x * p + oldx * p - k * y1;
-  y2 = y1 * p + oldy1 * p - k * y2;
-  y3 = y2 * p + oldy2 * p - k * y3;
-  y4 = y3 * p + oldy3 * p - k * y4;
+  // One TPT SVF step (Andrew Simper's trapezoidal SVF).
+  double v3 = input - ic2eq;
+  double v1 = a1 * ic1eq + a2 * v3;
+  double v2 = ic2eq + a2 * ic1eq + a3 * v3;
+  ic1eq = 2.0 * v1 - ic1eq;
+  ic2eq = 2.0 * v2 - ic2eq;
 
-  //Clipper band limited sigmoid
-  y4 -= (y4 * y4 * y4) / 6.f;
+  switch (mMode)
+  {
+    case kHighPass:
+      return input - k * v1 - v2;
+    case kBandPass:
+      return v1;
+    case kNotch:
+      return input - k * v1;
+    case kLowPass:
+    default:
+      return v2;
+  }
+}
 
-  oldx = x;
-  oldy1 = y1;
-  oldy2 = y2;
-  oldy3 = y3;
-  return y4;
+void
+Filter::setSampleRate(double fs)
+{
+  mSampleRate = fs;
+  calc();
 }
 
 double
-Filter::getCutoff()
+Filter::getSampleRate()
 {
-  return cutoff;
+  return mSampleRate;
+}
+
+void
+Filter::setBaseCutoff(double cutoff)
+{
+  mBaseCutoff = cutoff;
 }
 
 double
@@ -71,40 +92,39 @@ Filter::getBaseCutoff()
 }
 
 void
-Filter::setBaseCutoff(double cutoff)
+Filter::setCutoff(double c)
 {
-  mBaseCutoff = cutoff;
+  mCutoff = c;
+  calc();
+}
+
+double
+Filter::getCutoff()
+{
+  return mCutoff;
 }
 
 void
-Filter::setCutoff(double c)
+Filter::setResonance(double r)
 {
-  cutoff = c;
+  mRes = r;
   calc();
 }
 
 double
 Filter::getRes()
 {
-  return res;
+  return mRes;
 }
 
 void
-Filter::setResonance(double r)
+Filter::setMode(int mode)
 {
-  res = r;
-  calc();
+  mMode = std::clamp(mode, 0, (int)kNumModes - 1);
 }
 
 void
-Filter::setSampleRate(double sr)
+Filter::setDrive(double d)
 {
-  fs = sr;
-  calc();
-}
-
-double
-Filter::getSampleRate()
-{
-  return fs;
+  mDrive = std::clamp(d, 0.0, 1.0);
 }

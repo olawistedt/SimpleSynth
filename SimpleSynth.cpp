@@ -46,6 +46,8 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
                    iplug::IParam::ShapePowCurve(3.5));
   GetParam(kParamFilterResonance)->InitDouble("Filter Resonance", 0.0, 0.0, 1.0, 0.01, "%");
   GetParam(kParamFilterEnvelopeAmount)->InitDouble("Envelope amount", 0.5, 0.0, 1.0, 0.01, "%");
+  GetParam(kParamFilterType)->InitEnum("Filter Type", Filter::kLowPass, {"LP", "HP", "BP", "Notch"});
+  GetParam(kParamFilterDrive)->InitDouble("Filter Drive", 0.0, 0.0, 100.0, 1.0, "%");
 
 #if IPLUG_EDITOR // http://bit.ly/2S64BDd
   mMakeGraphicsFunc = [&]() {
@@ -125,6 +127,11 @@ SimpleSynth::SimpleSynth(const InstanceInfo& info)
 
     pGraphics->AttachControl(
         new IVKnobControl(IRECT(500, 50, 570, 150), kParamFilterEnvelopeAmount, "Env amount"));
+
+    pGraphics->AttachControl(
+        new IVKnobControl(IRECT(570, 50, 640, 150), kParamFilterDrive, "Drive"));
+    pGraphics->AttachControl(
+        new IVKnobControl(IRECT(640, 50, 710, 150), kParamFilterType, "Type"))->DisablePrompt(false);
 
     pGraphics->AttachControl(new IVSliderControl(IRECT(350, 150, 400, 280),
                                                  kParamFilterAttack,
@@ -361,6 +368,20 @@ SimpleSynth::OnParamChange(int paramIdx)
       for (int i = 0; i < kNumVoices; ++i)
       {
         mVoice[i].mFilterEnvelope.setAmount(value);
+      }
+      break;
+
+    case kParamFilterType:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].mFilter.setMode(static_cast<int>(value));
+      }
+      break;
+
+    case kParamFilterDrive:
+      for (int i = 0; i < kNumVoices; ++i)
+      {
+        mVoice[i].mFilter.setDrive(value / 100.0);
       }
       break;
 

@@ -34,6 +34,8 @@ enum EParams
   kParamFilterSustain,
   kParamFilterRelease,
   kParamFilterEnvelopeAmount,
+  kParamFilterType,
+  kParamFilterDrive,
   kNumParams
 };
 
